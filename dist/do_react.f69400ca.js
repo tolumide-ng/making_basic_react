@@ -145,7 +145,22 @@ var React = {
     }
 
     if (typeof tag == 'function') {
-      return tag(props);
+      try {
+        return tag(props);
+      } catch (_a) {
+        var promise = _a.promise,
+            key_1 = _a.key;
+        promise.then(function (data) {
+          promiseCache.set(key_1, data);
+          rerender();
+        });
+        return {
+          tag: 'h1',
+          props: {
+            children: ['I am Loading!']
+          }
+        };
+      }
     }
 
     var element = {
@@ -176,6 +191,19 @@ var useState = function useState(initialState) {
 
 var handleChange = function handleChange(e) {};
 
+var promiseCache = new Map();
+
+var createResource = function createResource(theResponse, key) {
+  if (promiseCache.has(key)) {
+    return promiseCache.get(key);
+  }
+
+  throw {
+    promise: theResponse,
+    key: key
+  };
+};
+
 var App = function App() {
   var _a = useState('tolumide'),
       name = _a[0],
@@ -185,6 +213,11 @@ var App = function App() {
       count = _b[0],
       setCount = _b[1];
 
+  var dogPhoto = createResource(fetch('https://dog.ceo/api/breeds/image/random').then(function (r) {
+    return r.json();
+  }).then(function (payload) {
+    return payload.message;
+  }), 'dogPhoto');
   return React.createElement("main", {
     className: 'react-2020'
   }, React.createElement("h1", null, "Hello ", name, "!"), React.createElement("section", null, React.createElement("div", {
@@ -210,7 +243,10 @@ var App = function App() {
     }
   }, "-")), React.createElement("h2", {
     className: 'h2tag'
-  }, "Introduction"), React.createElement("p", null, "I am Shopein Tolumide, I used to be from Nigeria but not anymore :evil-smile hahaha")));
+  }, "Introduction"), React.createElement("img", {
+    src: dogPhoto,
+    alt: 'good dog'
+  }), React.createElement("p", null, "I am a Dog, I used to be from Nigeria but not anymore :evil-smile hahaha")));
 };
 
 var render = function render(reactElement, container) {
@@ -246,7 +282,7 @@ var rerender = function rerender() {
   render(React.createElement(App, null), document.querySelector('#app'));
 };
 
-render(App(), document.querySelector('#app'));
+render(React.createElement(App, null), document.querySelector('#app'));
 },{}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -275,7 +311,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58192" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61675" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

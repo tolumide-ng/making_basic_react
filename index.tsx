@@ -1,7 +1,16 @@
 let React = {
     createElement: (tag, props, ...children) => {
         if (typeof tag == 'function') {
-            return tag(props)
+            try {
+                return tag(props)
+                
+            } catch ({ promise, key }) {
+                promise.then(data => {
+                    promiseCache.set(key, data)
+                    rerender()
+                })
+                return { tag: 'h1', props: {children: ['I am Loading!']}}
+            }
         }
         const element = { tag, props: {...props, children} }
         return element
@@ -31,7 +40,15 @@ const useState = (initialState) => {
 
 const handleChange = (e) => {}
 
+const promiseCache = new Map()
 
+const createResource = (theResponse, key) => {
+    if (promiseCache.has(key)) {
+        return promiseCache.get(key)
+    }
+
+    throw {promise: theResponse, key}
+}
 
 
 
@@ -39,6 +56,8 @@ const App = () => {
 
     const [name, setName] = useState('tolumide')
     const [count, setCount] = useState(1)
+
+    const dogPhoto = createResource(fetch('https://dog.ceo/api/breeds/image/random').then(r => r.json()).then(payload => payload.message),  'dogPhoto')
 
     return (
         <main className='react-2020'>
@@ -52,9 +71,10 @@ const App = () => {
                     <button onclick={() => setCount(count + 1)}>+</button>
                     <button onclick={() => setCount(count - 1)}>-</button>
                 </div>
-            <h2 className='h2tag'>Introduction</h2>
+                <h2 className='h2tag'>Introduction</h2>
+                <img src={dogPhoto} alt='good dog' />
             <p>
-                I am Shopein Tolumide, I used to be from Nigeria but not anymore :evil-smile hahaha
+                I am a Dog, I used to be from Nigeria but not anymore :evil-smile hahaha
             </p>
         </section>
     </main>
@@ -85,4 +105,4 @@ const rerender = () => {
     render(<App />, document.querySelector('#app'))
 }
 
-render(App(), document.querySelector('#app'))
+render(<App />, document.querySelector('#app'))
